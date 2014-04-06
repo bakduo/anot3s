@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <!-- interface-requires gtk+ 3.0 
+'''
+#############################################################################
+#                                                                           #
+#   anotes-gtk-gui.py                                                       #
+#   Copyright (C) 2013 linuxknow                                            #
+#   linuxknow [at] gmail dot com                                            #
+#   This program is free software: you can redistribute it and/or modify    #
+#   it under the terms of the GNU General Public License as published by    #
+#   the Free Software Foundation, either version 3 of the License, or       #
+#   (at your option) any later version.                                     #
+#                                                                           #
+#   This program is distributed in the hope that it will be useful,         #
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of          #
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           #
+#   GNU General Public License for more details.                            #
+#                                                                           #
+#   You should have received a copy of the GNU General Public License       #
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>    #
+#                                                                           #
+#############################################################################
+'''
+
+-->
+  <object class="GtkWindow" id="window1">
+    <property name="width_request">320</property>
+    <property name="height_request">280</property>
+    <property name="can_focus">False</property>
+    <property name="has_tooltip">True</property>
+    <property name="hexpand">True</property>
+    <property name="vexpand">True</property>
+    <property name="resizable">False</property>
+    <property name="window_position">center</property>
+    <property name="default_width">440</property>
+    <property name="default_height">280</property>
+    <property name="gravity">center</property>
+    <child>
+      <object class="GtkFixed" id="fixed1">
+        <property name="width_request">440</property>
+        <property name="height_request">280</property>
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="has_focus">True</property>
+        <property name="is_focus">True</property>
+        <property name="hexpand">True</property>
+        <property name="vexpand">True</property>
+        <child>
+          <object class="GtkButton" id="button1">
+            <property name="label" translatable="yes">Activar</property>
+            <property name="width_request">111</property>
+            <property name="height_request">33</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <signal name="clicked" handler="enabledServer" swapped="no"/>
+          </object>
+          <packing>
+            <property name="x">160</property>
+            <property name="y">227</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="button2">
+            <property name="label" translatable="yes">Crear nota</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <signal name="clicked" handler="sendMessage" swapped="no"/>
+          </object>
+          <packing>
+            <property name="x">170</property>
+            <property name="y">132</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="button3">
+            <property name="label" translatable="yes">Ocultar</property>
+            <property name="width_request">99</property>
+            <property name="height_request">33</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <signal name="clicked" handler="hideWindow" swapped="no"/>
+          </object>
+          <packing>
+            <property name="x">336</property>
+            <property name="y">227</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="button4">
+            <property name="label" translatable="yes">salir</property>
+            <property name="width_request">107</property>
+            <property name="height_request">34</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="xalign">0.4699999988079071</property>
+            <signal name="clicked" handler="exitApp" swapped="no"/>
+          </object>
+          <packing>
+            <property name="y">226</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBox" id="combobox1">
+            <property name="width_request">328</property>
+            <property name="height_request">33</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="valign">start</property>
+          </object>
+          <packing>
+            <property name="x">11</property>
+            <property name="y">68</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="button5">
+            <property name="label" translatable="yes">Agregar</property>
+            <property name="width_request">94</property>
+            <property name="height_request">33</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <signal name="clicked" handler="addContact" swapped="no"/>
+          </object>
+          <packing>
+            <property name="x">346</property>
+            <property name="y">69</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
