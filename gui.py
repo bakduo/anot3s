@@ -93,14 +93,15 @@ class AnotesGui(object):
     
     self.tray=None
     self.guiContact = gtk.Builder()
-    self.guiContact.add_from_file("add-contact-gui.glade")
+    path=os.path.dirname(os.path.realpath(__file__))
+    self.guiContact.add_from_file(path+"/add-contact-gui.glade")
     self.guiContact.connect_signals({
     "commitContact" : self.addContact,
     "backMenu" : self.backMainMenu,
     })
 
     self.guiMessage = gtk.Builder()
-    self.guiMessage.add_from_file("gui-message.glade")
+    self.guiMessage.add_from_file(path+"/gui-message.glade")
     self.guiMessage.connect_signals({
     "sendMessage" : self.sendMessage,
     "backMenu" : self.backMenu,
@@ -115,7 +116,7 @@ class AnotesGui(object):
     self.contactWindow.set_title("Anotes Contact")
 
     self.builder = gtk.Builder()
-    self.builder.add_from_file("anotes-gtk.glade")
+    self.builder.add_from_file(path+"/anotes-gtk.glade")
     # Conectamos signal de cerrar ventana
     self.builder.connect_signals({
     "exitApp" : self.salir,
