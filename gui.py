@@ -97,13 +97,15 @@ class AnotesGui(object):
     self.guiContact.add_from_file(path+"/add-contact-gui.glade")
     self.guiContact.connect_signals({
     "commitContact" : self.addContact,
-    "backMenu" : self.backMainMenu,
+    "backMenu" : self.backMainMenu
     })
 
     self.guiMessage = gtk.Builder()
     self.guiMessage.add_from_file(path+"/gui-message.glade")
     self.guiMessage.connect_signals({
     "sendMessage" : self.sendMessage,
+    "backMenu" : self.backMenu,
+    "backMenuClose": self.backMenuClose
     })
 
     self.messageWindow = self.guiMessage.get_object("window1")
@@ -119,6 +121,7 @@ class AnotesGui(object):
     # Conectamos signal de cerrar ventana
     self.builder.connect_signals({
     "exitApp" : self.salir,
+    "exitAppSalir": self.salirExit,
     "enabledServer" : self.enabledServer,
     "addContact" : self.contactGui,
     "sendMessage" : self.messageGui,
@@ -140,7 +143,13 @@ class AnotesGui(object):
   def salirApp(self):
     self.model.close_server()
     gtk.main_quit()
+
   def salir(self,evento):
+    if self.tray is not None:
+       self.model.close_server()
+       gtk.main_quit()
+
+  def salirExit(self,evento,evento2):
     if self.tray is not None:
        self.model.close_server()
        gtk.main_quit()
@@ -211,7 +220,8 @@ class AnotesGui(object):
         valor_ip = model[index][1]# id 0 es indice id 1 contenido
         texto_item=self.guiMessage.get_object("textview1")
         buffer_text = texto_item.get_buffer()
-        self.model.sendMessageToPatner(str(valor_ip),str(buffer_text.get_text(buffer_text.get_start_iter(),buffer_text.get_end_iter())))
+        valor=self.model.sendMessageToPatner(str(valor_ip),str(buffer_text.get_text(buffer_text.get_start_iter(),buffer_text.get_end_iter())))
+        print valor
         buffer_text.set_text("")
         self.messageWindow.hide()
         self.window.show()
@@ -220,6 +230,12 @@ class AnotesGui(object):
 
 
   def backMenu(self,evento):
+    print "volviendo al menu"
+    self.messageWindow.hide()
+    #self.guiMessage.hide()
+    self.window.show()
+
+  def backMenuClose(self,evento,evento2):
     print "volviendo al menu"
     self.messageWindow.hide()
     #self.guiMessage.hide()

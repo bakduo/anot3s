@@ -29,9 +29,34 @@ import time
 import os
 import sys
 import threading
+from scapy.all import *
 from Client import ClientAnotes
 from Server import ReceptAnotes
 
+class PortScan(object):
+    def __init__(self):
+        self.ip="0.0.0.0"
+        self.dst="0.0.0.0"
+        self.port_dst=1024
+        self.port_src=1024
+    def setPortDst(self,port):
+        self.port_dst=port
+    def setIpDst(self,ip):
+        self.dst=ip
+
+
+    def scan_service(self):
+        #ip_packet = IP(src=self.ip, dst=self.dst)
+        #TCP_SYN_packet = TCP(sport=RandShort(), dport=int(self.port_dst), flags='S', seq=100)
+        #TCP_SYNACK_reply = sr(ip_packet/TCP_SYN_packet,timeout=1)
+        #if TCP_SYNACK_reply is None:
+        #    print "\nPort " + self.port_dst + " is closed on host " + self.dst
+        #    return 1
+        #if TCP_SYNACK_reply and TCP_SYNACK_reply[TCP].flags == 18:
+        #    print "\nPort " + self.port_dst + " is OPEN on host " + self.dst
+        #    return 0
+        s = socket.socket()
+        return os.strerror(s.connect_ex((self.dst, self.port_dst)))
 
 class AnotesModel(object):
     def __init__(self):
@@ -55,11 +80,19 @@ class AnotesModel(object):
         self.contacts[ip]=patner
 
     def sendMessageToPatner(self,ip,message):
-        patner=self.getContact(ip)
-        print str(patner)
-        patner.setHostName(self.hostname)
-        patner.setMessage(message)
-        patner.send()
+        scan=PortScan()
+        scan.setPortDst(24837)
+        scan.setIpDst(ip)
+        value=scan.scan_service()
+        if (value==0):
+            patner=self.getContact(ip)
+            print str(patner)
+            patner.setHostName(self.hostname)
+            patner.setMessage(message)
+            patner.send()
+            return 0
+        else:
+            print value
 
     def setCantContact(self,cant):
        self.cantContact = cant
