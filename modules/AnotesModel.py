@@ -24,6 +24,7 @@
 #Importamos la libreria gtk
 import optparse
 import gtk
+import socket
 import time
 import os
 import sys
@@ -39,9 +40,12 @@ class AnotesModel(object):
         self.cantContact=0
         self.server=ReceptAnotes()
         self.server_message_thread=None
+        self.hostname=socket.gethostname()
 
     def getContact(self,id):
         return self.contacts[id]
+    def getHostName(self):
+        return self.hostname
 
     def addContact(self,ip,port):
         patner = ClientAnotes();
@@ -53,6 +57,7 @@ class AnotesModel(object):
     def sendMessageToPatner(self,ip,message):
         patner=self.getContact(ip)
         print str(patner)
+        patner.setHostName(self.hostname)
         patner.setMessage(message)
         patner.send()
 

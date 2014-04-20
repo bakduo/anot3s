@@ -1,36 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <!-- interface-requires gtk+ 3.0 
-'''
-#############################################################################
-#                                                                           #
-#   anotes-gtk-gui.py                                                       #
-#   Copyright (C) 2013 linuxknow                                            #
-#   linuxknow [at] gmail dot com                                            #
-#   This program is free software: you can redistribute it and/or modify    #
-#   it under the terms of the GNU General Public License as published by    #
-#   the Free Software Foundation, either version 3 of the License, or       #
-#   (at your option) any later version.                                     #
-#                                                                           #
-#   This program is distributed in the hope that it will be useful,         #
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of          #
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           #
-#   GNU General Public License for more details.                            #
-#                                                                           #
-#   You should have received a copy of the GNU General Public License       #
-#   along with this program.  If not, see <http://www.gnu.org/licenses/>    #
-#                                                                           #
-#############################################################################
-'''
-
--->
+  <!-- interface-requires gtk+ 3.0 -->
+  <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkWindow" id="window1">
     <property name="width_request">320</property>
     <property name="height_request">280</property>
     <property name="can_focus">False</property>
     <property name="has_tooltip">True</property>
-    <property name="hexpand">True</property>
-    <property name="vexpand">True</property>
     <property name="resizable">False</property>
     <property name="window_position">center</property>
     <property name="default_width">440</property>
@@ -44,64 +20,68 @@
         <property name="can_focus">True</property>
         <property name="has_focus">True</property>
         <property name="is_focus">True</property>
-        <property name="hexpand">True</property>
-        <property name="vexpand">True</property>
         <child>
           <object class="GtkButton" id="button1">
             <property name="label" translatable="yes">Activar</property>
             <property name="width_request">111</property>
-            <property name="height_request">33</property>
+            <property name="height_request">32</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="use_action_appearance">False</property>
             <signal name="clicked" handler="enabledServer" swapped="no"/>
           </object>
           <packing>
-            <property name="x">160</property>
-            <property name="y">227</property>
+            <property name="x">165</property>
+            <property name="y">247</property>
           </packing>
         </child>
         <child>
           <object class="GtkButton" id="button2">
             <property name="label" translatable="yes">Crear nota</property>
+            <property name="width_request">101</property>
+            <property name="height_request">29</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="use_action_appearance">False</property>
             <signal name="clicked" handler="sendMessage" swapped="no"/>
           </object>
           <packing>
-            <property name="x">170</property>
-            <property name="y">132</property>
+            <property name="x">1</property>
+            <property name="y">91</property>
           </packing>
         </child>
         <child>
           <object class="GtkButton" id="button3">
             <property name="label" translatable="yes">Ocultar</property>
             <property name="width_request">99</property>
-            <property name="height_request">33</property>
+            <property name="height_request">29</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="use_action_appearance">False</property>
             <signal name="clicked" handler="hideWindow" swapped="no"/>
           </object>
           <packing>
-            <property name="x">336</property>
-            <property name="y">227</property>
+            <property name="x">341</property>
+            <property name="y">250</property>
           </packing>
         </child>
         <child>
           <object class="GtkButton" id="button4">
             <property name="label" translatable="yes">salir</property>
             <property name="width_request">107</property>
-            <property name="height_request">34</property>
+            <property name="height_request">31</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="use_action_appearance">False</property>
             <property name="xalign">0.4699999988079071</property>
             <signal name="clicked" handler="exitApp" swapped="no"/>
           </object>
           <packing>
-            <property name="y">226</property>
+            <property name="y">245</property>
           </packing>
         </child>
         <child>
@@ -110,26 +90,55 @@
             <property name="height_request">33</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="valign">start</property>
           </object>
           <packing>
-            <property name="x">11</property>
-            <property name="y">68</property>
+            <property name="y">46</property>
           </packing>
         </child>
         <child>
           <object class="GtkButton" id="button5">
             <property name="label" translatable="yes">Agregar</property>
-            <property name="width_request">94</property>
-            <property name="height_request">33</property>
+            <property name="width_request">101</property>
+            <property name="height_request">28</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="use_action_appearance">False</property>
             <signal name="clicked" handler="addContact" swapped="no"/>
           </object>
           <packing>
-            <property name="x">346</property>
-            <property name="y">69</property>
+            <property name="x">339</property>
+            <property name="y">48</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label1">
+            <property name="width_request">129</property>
+            <property name="height_request">31</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="xalign">0</property>
+            <property name="yalign">0</property>
+            <property name="label" translatable="yes">HostName</property>
+          </object>
+          <packing>
+            <property name="x">2</property>
+            <property name="y">6</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="button6">
+            <property name="label" translatable="yes">Adjunto</property>
+            <property name="width_request">101</property>
+            <property name="height_request">28</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="use_action_appearance">False</property>
+          </object>
+          <packing>
+            <property name="x">225</property>
+            <property name="y">93</property>
           </packing>
         </child>
       </object>

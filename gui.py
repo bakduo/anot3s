@@ -104,11 +104,10 @@ class AnotesGui(object):
     self.guiMessage.add_from_file(path+"/gui-message.glade")
     self.guiMessage.connect_signals({
     "sendMessage" : self.sendMessage,
-    "backMenu" : self.backMenu,
     })
 
-    self.messageWindow = self.guiMessage.get_object("dialog1")
-    self.messageWindow.set_size_request(320, 140)
+    self.messageWindow = self.guiMessage.get_object("window1")
+    self.messageWindow.set_size_request(424, 240)
     self.messageWindow.set_title("Anotes Message")
 
     self.contactWindow = self.guiContact.get_object("dialog1")
@@ -125,6 +124,9 @@ class AnotesGui(object):
     "sendMessage" : self.messageGui,
     "hideWindow": self.hide
     })
+
+    self.hostlabel = self.builder.get_object("label1")
+    self.hostlabel.set_text(self.model.getHostName())
 
     self.combo = self.builder.get_object("combobox1")
     self.loadIps()
@@ -205,16 +207,22 @@ class AnotesGui(object):
   def sendMessage(self,evento):
     model = self.combo.get_model()
     index = self.combo.get_active()
-    if (index > 0):
+    if (index >= 0):
         valor_ip = model[index][1]# id 0 es indice id 1 contenido
         texto_item=self.guiMessage.get_object("textview1")
         buffer_text = texto_item.get_buffer()
         self.model.sendMessageToPatner(str(valor_ip),str(buffer_text.get_text(buffer_text.get_start_iter(),buffer_text.get_end_iter())))
         buffer_text.set_text("")
+        self.messageWindow.hide()
+        self.window.show()
+    else:
+        print "Error"
+
 
   def backMenu(self,evento):
     print "volviendo al menu"
     self.messageWindow.hide()
+    #self.guiMessage.hide()
     self.window.show()
 
   def backMainMenu(self,evento):

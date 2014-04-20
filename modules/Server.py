@@ -69,9 +69,12 @@ class ReceptAnotes(object):
                 data = conn.recv(self.BUFFER_SIZE)
                 if not data: 
                     break
-                subprocess.call(['/usr/bin/xmessage',data])
+                print len(data)
+                self.newenv = os.environ.copy()
+                self.newenv['anotes_message'] = 'True'
+                args = ['/usr/bin/gxmessage','-wrap','-geometry','220x80','-sticky', '-ontop', '-title',"Anotes message",data]
+                proc = subprocess.Popen(args, env=self.newenv)
                 print "received data: \n", data
-             #conn.send(data)  # echo
              conn.close()
 
     def run(self):
@@ -88,7 +91,6 @@ class ReceptAnotes(object):
        proc = subprocess.Popen(args, env=self.newenv)
        self.pid = proc.pid
        print "Pid: "+str(self.pid)
-       #proc.wait()
 
     def close_process(self):
        args = ['/bin/kill','-9',self.pid]

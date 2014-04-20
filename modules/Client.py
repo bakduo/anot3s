@@ -32,16 +32,16 @@ class ClientAnotes(object):
         self.TCP_PORT = 5005
         self.BUFFER_SIZE = 1024
         self.MESSAGE = ""
+        self.hostname=""
 
 
     def send(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.TCP_IP, self.TCP_PORT))
-        s.send("GET %s HTTP/1.0\r\nMensaje: %s\r\n\r\n" % (self.TCP_IP,self.MESSAGE))
-        #s.sendall(self.MESSAGE)
-        #data = s.recv(self.BUFFER_SIZE)
+        protocolo="%s\n" % (self.getHostName())
+        s.send(protocolo)
+        s.send(str(self.MESSAGE))
         s.close()
-        #print "received data:", data
 
     def setPort(self,port):
         self.TCP_PORT=port
@@ -51,6 +51,10 @@ class ClientAnotes(object):
 
     def setMessage(self,m):
         self.MESSAGE = m
+    def setHostName(self,host):
+        self.hostname=host
+    def getHostName(self):
+        return self.hostname
         
 
 def main():
