@@ -92,7 +92,7 @@ class AnotesModel(object):
             patner.send()
             return 0
         else:
-            print value
+            return value
 
     def setCantContact(self,cant):
        self.cantContact = cant

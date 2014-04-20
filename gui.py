@@ -33,6 +33,7 @@ import gtk
 import time
 import os
 import sys
+import subprocess
 from modules.AnotesModel import AnotesModel
 
 class SystrayIconApp:
@@ -221,7 +222,14 @@ class AnotesGui(object):
         texto_item=self.guiMessage.get_object("textview1")
         buffer_text = texto_item.get_buffer()
         valor=self.model.sendMessageToPatner(str(valor_ip),str(buffer_text.get_text(buffer_text.get_start_iter(),buffer_text.get_end_iter())))
-        print valor
+        if (valor==0):
+            print "enviado"
+        else:
+             newenv = os.environ.copy()
+             newenv['anotes_message'] = 'True'
+             args = ['/usr/bin/gxmessage','-bg','red','-fg','white','-noescape','-buttons','cerrar','-wrap','-geometry','220x80','-sticky', '-ontop', '-title',"Anotes Error",str(valor)]
+             proc = subprocess.Popen(args, env=newenv)
+
         buffer_text.set_text("")
         self.messageWindow.hide()
         self.window.show()
