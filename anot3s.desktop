@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Type=Application
+Name=Anot3s
+GenericName=Anot3s
+Comment=Herramienta para enviar mensajes
+Icon=/usr/share/pixmaps/mail_send.png
+TryExec=execAnot3s
+Exec=execAnot3s
+Categories=Application;Network;GTK
