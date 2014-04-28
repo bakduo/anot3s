@@ -36,12 +36,18 @@ class ClientAnotes(object):
 
 
     def send(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((self.TCP_IP, self.TCP_PORT))
-        protocolo="%s\n" % (self.getHostName())
-        s.send(protocolo)
-        s.send(str(self.MESSAGE))
-        s.close()
+         try:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.connect((self.TCP_IP, self.TCP_PORT))
+                protocolo="%s\n" % (self.getHostName())
+                s.send(protocolo)
+                s.send(str(self.MESSAGE))
+                s.close()
+                return 0
+         except:
+                e = sys.exc_info()[0]
+                print( "<p>Error: %s</p>" % e )
+                return 1
 
     def setPort(self,port):
         self.TCP_PORT=port
