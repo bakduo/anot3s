@@ -29,12 +29,15 @@ import pygtk
 pygtk.require("2.0")
 #Importamos la libreria gtk
 import optparse
+import gobject
 import gtk
 import time
 import os
 import sys
 import subprocess
 from modules.AnotesModel import AnotesModel
+
+COLUMN_TEXT=0
 
 class SystrayIconApp:
   def __init__(self,gui):
@@ -84,6 +87,10 @@ class SystrayIconApp:
     self.guiApp.salir(widget)
     gtk.main_quit()
 
+
+def foreach(model, path, iter, selected):
+    selected.append(model.get_value(iter, COLUMN_TEXT))
+
 class AnotesGui(object):
   def __init__(self,model):
     # Cargamos el constructor de gtk y lo llamamos builder
@@ -93,6 +100,9 @@ class AnotesGui(object):
       self.model=model
     
     self.tray=None
+    self.multipleEnabled=False
+    self.envioMultiple=[]
+    self.modelSelection = gtk.ListStore(gobject.TYPE_STRING)
     self.guiContact = gtk.Builder()
     path=os.path.dirname(os.path.realpath(__file__))
     self.guiContact.add_from_file(path+"/add-contact-gui.glade")
@@ -126,7 +136,8 @@ class AnotesGui(object):
     "enabledServer" : self.enabledServer,
     "addContact" : self.contactGui,
     "sendMessage" : self.messageGui,
-    "hideWindow": self.hide
+    "hideWindow": self.hide,
+    "seleccionDestino": self.seleccionGui
     })
 
     self.hostlabel = self.builder.get_object("label1")
@@ -138,6 +149,43 @@ class AnotesGui(object):
     self.window.set_size_request(440, 280)
     self.window.set_title("Anotes GPL")
     self.window.show()
+
+    self.treeview = gtk.TreeView(self.modelSelection)
+    self.treeview.set_rules_hint(gtk.TRUE)
+    column = gtk.TreeViewColumn('Destinos', gtk.CellRendererText(),text=COLUMN_TEXT)
+    self.treeview.append_column(column)
+    self.treeview.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
+
+    self.windowSelection = gtk.Window()
+    #self.windowSelection.connect("hideSelection", self.hideSelection())
+    self.windowSelection.set_title('Seleccion multiple anotes')
+    self.windowSelection.set_border_width(8)
+    self.vbox = gtk.VBox(gtk.FALSE, 8)
+    self.windowSelection.add(self.vbox)
+    labelSelection = gtk.Label('Seleccione los destinos del mensaje')
+    self.vbox.pack_start(labelSelection, gtk.FALSE, gtk.FALSE)
+    self.sw = gtk.ScrolledWindow()
+    self.sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
+    self.sw.set_policy(gtk.POLICY_NEVER,gtk.POLICY_AUTOMATIC)
+    self.vbox.pack_start(self.sw)
+    self.sw.add(self.treeview)
+    self.windowSelection.set_default_size(280, 250)
+
+    self.buttonSelection = gtk.Button('OK')
+    #self.button.show()
+    self.buttonSelection.connect("clicked",self.ok_selection)
+    self.vbox.pack_end(self.buttonSelection,gtk.FALSE)
+
+  def ok_selection(self,event):
+    self.windowSelection.hide();
+    self.envioMultiple = []
+    self.treeview.get_selection().selected_foreach(foreach, self.envioMultiple)
+    print 'seleccionados: ...', self.envioMultiple
+    print len(self.envioMultiple)
+    self.multipleEnabled=True
+    self.window.hide()
+    self.messageWindow.show()
+    
 
   def setTray(self,tray):
     self.tray=tray
@@ -176,8 +224,10 @@ class AnotesGui(object):
             while 1:
                 line = f.readline()
                 if not line:break
-                self.store.append([pos,line])
-                self.model.addContact(line,24837)
+                self.store.append([pos,line.rstrip('\n')])
+                self.model.addContact(line.rstrip('\n'),24837)
+                iter = self.modelSelection.append()
+                self.modelSelection.set(iter, COLUMN_TEXT, line.rstrip('\n'))
                 pos=pos + 1
             f.close()
             self.model.setCantContact(pos)
@@ -196,6 +246,8 @@ class AnotesGui(object):
     print "Agrega un contacto"
     entry_texto=self.guiContact.get_object("entry1")
     self.store.append([self.model.getCantContact(),entry_texto.get_text()])
+    iter = self.modelSelection.append()
+    self.modelSelection.set(iter, COLUMN_TEXT, entry_texto.get_text())
     path=os.path.dirname(os.path.realpath(__file__))
     f = open(path+'/ips.txt','a')
     print entry_texto.get_text()+str("\n")
@@ -214,10 +266,19 @@ class AnotesGui(object):
     self.window.hide()
     self.contactWindow.show()
 
+  def seleccionGui(self,evento):
+    # self.buttonSelection.show()
+    self.multipleEnabled=True
+    self.windowSelection.show_all()
+
+  # when you click ok, call this function for each selected item
+  def foreach(model, path, iter, selected):
+    selected.append(model.get_value(iter, COLUMN_TEXT))
+
   def sendMessage(self,evento):
     model = self.combo.get_model()
     index = self.combo.get_active()
-    if (index >= 0):
+    if (index >= 0 and self.multipleEnabled==False):
         valor_ip = model[index][1]# id 0 es indice id 1 contenido
         texto_item=self.guiMessage.get_object("textview1")
         buffer_text = texto_item.get_buffer()
@@ -233,8 +294,27 @@ class AnotesGui(object):
         buffer_text.set_text("")
         self.messageWindow.hide()
         self.window.show()
+    elif (len(self.envioMultiple)>0):
+        for ip in self.envioMultiple:
+          print "Enviar a : %s" %ip
+          texto_item=self.guiMessage.get_object("textview1")
+          buffer_text = texto_item.get_buffer()
+          valor=self.model.sendMessageToPatner(ip,str(buffer_text.get_text(buffer_text.get_start_iter(),buffer_text.get_end_iter())))
+          if (valor==0):
+             print "enviado"
+          else:
+             newenv = os.environ.copy()
+             newenv['anotes_message'] = 'True'
+             args = ['/usr/bin/gxmessage','-bg','red','-fg','white','-noescape','-buttons','cerrar','-wrap','-geometry','220x80','-sticky', '-ontop', '-title',"Anotes Error",str(valor)]
+             proc = subprocess.Popen(args, env=newenv)
+             
+        buffer_text.set_text("")
+        self.multipleEnabled=False
+        self.messageWindow.hide()
+        self.window.show()
     else:
-        print "Error"
+        #print "Error"
+        args = ['/usr/bin/gxmessage','-bg','red','-fg','white','-noescape','-buttons','cerrar','-wrap','-geometry','220x80','-sticky', '-ontop', '-title',"Anotes Error",str('Debe seleccionar un destino')]
 
 
   def backMenu(self,evento):

@@ -27,6 +27,8 @@ import sys, getopt
 import subprocess
 import threading
 import os
+import time
+import datetime
 
 
 class SocketServerMessage(threading.Thread):
@@ -41,7 +43,7 @@ class ReceptAnotes(object):
     def __init__(self):
         self.TCP_IP = '0.0.0.0'
         self.TCP_PORT = 24837
-        self.BUFFER_SIZE = 512  # Normally 1024, but we want fast response
+        self.BUFFER_SIZE = 4096  # Normally 1024, but we want fast response
         self.state = 0
         self.pid=-1
         self.newenv=None
@@ -58,6 +60,29 @@ class ReceptAnotes(object):
     def setState(self,estado):
         self.state = estado
 
+    def saveMessage(self,message):
+        path=os.path.dirname(os.path.realpath(__file__))
+        try:
+            if os.path.isfile(path+'/history.txt'):
+                f = open(path+'/history.txt','a')
+                f.writelines(datetime.datetime.now().strftime("%y-%m-%d-%H-%M"))
+                f.writelines("\n")
+                f.writelines(message)
+                f.writelines("\n")
+                f.close()
+            else:
+                f = open(path+'/history.txt','w')
+                f.writelines(datetime.datetime.now().strftime("%y-%m-%d-%H-%M"))
+                f.writelines("\n")
+                f.writelines(message)
+                f.writelines("\n");
+                f.close()
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+
+
     def run_server(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind((self.TCP_IP, self.TCP_PORT))
@@ -73,6 +98,7 @@ class ReceptAnotes(object):
                 self.newenv = os.environ.copy()
                 self.newenv['anotes_message'] = 'True'
                 args = ['/usr/bin/gxmessage','-wrap','-geometry','220x80','-sticky', '-ontop', '-title',"Anotes message",data]
+                self.saveMessage(data)
                 proc = subprocess.Popen(args, env=self.newenv)
                 print "received data: \n", data
              conn.close()

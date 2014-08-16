@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
-  <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkWindow" id="window1">
     <property name="width_request">320</property>
     <property name="height_request">280</property>
@@ -24,6 +23,7 @@
         <child>
           <object class="GtkButton" id="button1">
             <property name="label" translatable="yes">Activar</property>
+            <property name="use_action_appearance">False</property>
             <property name="width_request">111</property>
             <property name="height_request">32</property>
             <property name="visible">True</property>
@@ -40,8 +40,9 @@
         <child>
           <object class="GtkButton" id="button2">
             <property name="label" translatable="yes">Crear nota</property>
+            <property name="use_action_appearance">False</property>
             <property name="width_request">101</property>
-            <property name="height_request">29</property>
+            <property name="height_request">31</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
@@ -50,12 +51,13 @@
           </object>
           <packing>
             <property name="x">1</property>
-            <property name="y">91</property>
+            <property name="y">93</property>
           </packing>
         </child>
         <child>
           <object class="GtkButton" id="button3">
             <property name="label" translatable="yes">Ocultar</property>
+            <property name="use_action_appearance">False</property>
             <property name="width_request">99</property>
             <property name="height_request">29</property>
             <property name="visible">True</property>
@@ -72,6 +74,7 @@
         <child>
           <object class="GtkButton" id="button4">
             <property name="label" translatable="yes">salir</property>
+            <property name="use_action_appearance">False</property>
             <property name="width_request">107</property>
             <property name="height_request">31</property>
             <property name="visible">True</property>
@@ -99,6 +102,7 @@
         <child>
           <object class="GtkButton" id="button5">
             <property name="label" translatable="yes">Agregar</property>
+            <property name="use_action_appearance">False</property>
             <property name="width_request">101</property>
             <property name="height_request">28</property>
             <property name="visible">True</property>
@@ -130,16 +134,34 @@
         <child>
           <object class="GtkButton" id="button6">
             <property name="label" translatable="yes">Adjunto</property>
+            <property name="use_action_appearance">False</property>
             <property name="width_request">101</property>
-            <property name="height_request">28</property>
+            <property name="height_request">31</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="use_action_appearance">False</property>
           </object>
           <packing>
-            <property name="x">225</property>
-            <property name="y">93</property>
+            <property name="x">339</property>
+            <property name="y">91</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="button7">
+            <property name="label" translatable="yes">Seleccion multiple</property>
+            <property name="use_action_appearance">False</property>
+            <property name="width_request">139</property>
+            <property name="height_request">34</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="use_action_appearance">False</property>
+            <signal name="clicked" handler="seleccionDestino" swapped="no"/>
+          </object>
+          <packing>
+            <property name="x">185</property>
+            <property name="y">91</property>
           </packing>
         </child>
       </object>
