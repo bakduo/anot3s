@@ -49,23 +49,13 @@ class AnotesModel(object):
         self.state=0
         self.contacts={}
         self.archivo = None
-        self.nombreArchivo = None
         self.cantContact=0
         self.server=ReceptAnotes()
         self.server_message_thread=None
-        self.server_file_thread=None
         self.hostname=socket.gethostname()
 
     def getContact(self,id):
-        try:
-            if (self.contacts[id]):
-                return self.contacts[id]
-            else:
-                return None
-        except KeyError:
-            print "Key no existe"
-            return None
-
+        return self.contacts[id]
     def getHostName(self):
         return self.hostname
 
@@ -79,15 +69,9 @@ class AnotesModel(object):
     def sendFileToPatner(self,ip):
         patner=self.getContact(ip)
         if (self.archivo is not None):
-            patner.setAttach(self.archivo,self.nombreArchivo)
+            partner.setAttach(self.archivo)
             patner.setHostName(self.hostname)
-            patner.setPortFile(24839)
-            retorno = patner.sendFile()
-            #print "valor envio archivo : %s" % retorno
-            if (retorno==0):
-                mensaje="Archivo: %s se transfirio con exito." % self.nombreArchivo
-                patner.setMessage(mensaje)
-                patner.send()
+            if (patner.sendFile()==0):
                 return 0
             else:
                 return "Error de conexion en el vecino: %s" %(ip)
@@ -119,8 +103,7 @@ class AnotesModel(object):
     def runServer(self):
         self.server_message_thread = threading.Thread(target=self.server.run_command())
         self.server_message_thread.start()
-        self.server_file_thread = threading.Thread(target=self.server.run_commandFile())
-        self.server_file_thread.start()
+        #self.launchServer()
 
     def stopServer(self):
         self.server.setState(1)
@@ -128,18 +111,12 @@ class AnotesModel(object):
              print "Sin thread"
              if int(self.server.pid) <> int(-1):
                  self.server.close_process()
-             else:
-                 self.server.closeThread()
         else:
              try:
                  if self.server_message_thread.isAlive():
                      self.server_message_thread.stop()
-                 if self.server_file_thread.isAlive():
-                     self.server_file_thread.stop()
                  #self.server.close_process()
-                 self.server.closeThread()
                  os.system("kill -9 "+str(self.server.getPid()));
-                 os.system("kill -9 "+str(self.server.getPidFile()));
                  gtk.main_quit
              except:
                  e = sys.exc_info()[0]
@@ -147,12 +124,9 @@ class AnotesModel(object):
 
     def close_server(self):
         self.stopServer()
-    
-    def setAdjunto(self,filesrc,nombre):
-        self.archivo = filesrc
-        self.nombreArchivo = nombre
-    
+        
+    def setAdjunto(self,filesrc):
+	    self.archivo = filesrc
+               
     def getAdjunto(self):
         return self.archivo
-    def getNombreArchivoAdjunto(self):
-        return self.nombreArchivo
