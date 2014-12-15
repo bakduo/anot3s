@@ -25,20 +25,25 @@
 
 import socket
 import sys, getopt
+import os
 from sendfile import sendfile
 
 class ClientAnotes(object):
     def __init__(self):
         self.TCP_IP = '127.0.0.1'
         self.TCP_PORT = 5005
-        self.TCP_PORTFILE = 24838
+        self.TCP_PORTFILE = 24839
         self.BUFFER_SIZE = 8048
         self.MESSAGE = ""
         self.FILE = None
+        self.nombreAdjunto = None
         self.hostname=""
 
-    def setAttach(self,nombre):
-               self.FILE = nombre
+    def setAttach(self,nombre,nombrearchivo):
+        self.FILE = nombre
+        self.nombreAdjunto = nombrearchivo
+    def setPortFile(self,port):
+        self.TCP_PORTFILE=port
                
     def send(self):
          try:
@@ -56,21 +61,31 @@ class ClientAnotes(object):
 
     def sendFile(self):
          try:
+                
                 file_handle = open(self.FILE, "rb")
-                blocksize = os.path.getsize(self.FILE)
-                offset = 0
+                #blocksize = os.path.getsize(self.FILE)
+                #offset = 0
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect((self.TCP_IP, self.TCP_PORTFILE))
+                s.sendall(self.nombreAdjunto)
                 while True:
-                    sent = sendfile(s.fileno(), file_handle.fileno(), offset, blocksize)
-                    if sent == 0:
-                        break
-                    offset += sent
+                    #sent = sendfile(s.fileno(), file_handle.fileno(), offset, blocksize)
+                    #print "valor enviado con sendfile: %s\n" % sent 
+                    #if sent == 0:
+                    #    break
+                    #offset += sent
+                    data = file_handle.read(self.BUFFER_SIZE)
+                    if not data:
+                        break  # EOF
+                    s.sendall(data)
+                
+                #print "Cerrando client..."
+                file_handle.close()
                 s.close()
                 return 0
          except:
                 e = sys.exc_info()[0]
-                print( "<p>Error: %s</p>" % e )
+                print( "<p>Error al enviar archivo:  %s</p>" % e )
                 return 1
                
     def setPort(self,port):
