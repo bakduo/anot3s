@@ -47,7 +47,7 @@ class SystrayIconApp:
     self.tray.set_tooltip(('Anotes GPL'))
     self.guiApp = gui
     self.guiApp.setTray(self.tray)
-		
+               
   def on_right_click(self, icon, event_button, event_time):
     self.make_menu(event_button, event_time)
   def make_menu(self, event_button, event_time):
@@ -110,7 +110,15 @@ class AnotesGui(object):
     "commitContact" : self.addContact,
     "backMenu" : self.backMainMenu
     })
-
+    
+    self.guiAdjunto = gtk.Builder()
+    self.guiAdjunto.add_from_file(path+"/gui-adjunto.glade")
+    self.guiAdjunto.connect_signals({
+    "setAdjunto" : self.setAdjunto,
+    "sendAdjunto": self.sendAdjunto,
+    "hideAdjunto": self.backAdjunto
+    })
+    
     self.guiMessage = gtk.Builder()
     self.guiMessage.add_from_file(path+"/gui-message.glade")
     self.guiMessage.connect_signals({
@@ -126,6 +134,10 @@ class AnotesGui(object):
     self.contactWindow = self.guiContact.get_object("dialog1")
     self.contactWindow.set_size_request(200, 80)
     self.contactWindow.set_title("Anotes Contact")
+    
+    self.adjuntoWindow = self.guiAdjunto.get_object("dialog1")
+    self.adjuntoWindow.set_size_request(200, 80)
+    self.adjuntoWindow.set_title("Anotes agregar adjunto")
 
     self.builder = gtk.Builder()
     self.builder.add_from_file(path+"/anotes-gtk.glade")
@@ -137,7 +149,8 @@ class AnotesGui(object):
     "addContact" : self.contactGui,
     "sendMessage" : self.messageGui,
     "hideWindow": self.hide,
-    "seleccionDestino": self.seleccionGui
+    "seleccionDestino": self.seleccionGui,
+    "showAdjunto": self.adjuntoGui
     })
 
     self.hostlabel = self.builder.get_object("label1")
@@ -241,7 +254,67 @@ class AnotesGui(object):
         print "I/O error({0}): {1}".format(e.errno, e.strerror)
     except:
         print "Unexpected error:", sys.exc_info()[0]
+        
+  def setAdjunto(self,evento):
+    print "setadjunto"
+    dialog = gtk.FileChooserDialog("Open..",None,gtk.FILE_CHOOSER_ACTION_OPEN,(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_OPEN,gtk.RESPONSE_OK))
+    dialog.set_default_response(gtk.RESPONSE_OK)
+    filter = gtk.FileFilter()
+    filter.set_name("All files")
+    filter.add_pattern("*")
+    dialog.add_filter(filter)
+    filter = gtk.FileFilter()
+    filter.add_pattern("*.*")
+    dialog.add_filter(filter)
+    response = dialog.run()
+    if response == gtk.RESPONSE_OK:
+       print dialog.get_filename(), 'selected'
+       self.model.setAdjunto(dialog.get_filename())
+    elif response == gtk.RESPONSE_CANCEL:
+       print 'Closed, no files selected'
+    dialog.destroy()
+  
+  def sendAdjunto(self,evento):
+    print "Enviando ..."
+    model = self.combo.get_model()
+    index = self.combo.get_active()
+    if (index >= 0 and self.multipleEnabled==False):
+        valor_ip = model[index][1]# id 0 es indice id 1 contenido
+        valor=self.model.sendFileToPatner(str(valor_ip))
+        if (valor==0):
+            print "enviado"
+        else:
+             newenv = os.environ.copy()
+             newenv['anotes_message'] = 'True'
+             args = ['/usr/bin/gxmessage','-bg','red','-fg','white','-noescape','-buttons','cerrar','-wrap','-geometry','220x80','-sticky', '-ontop', '-title',"Anotes Error",str(valor)]
+             proc = subprocess.Popen(args, env=newenv)
 
+        buffer_text.set_text("")
+        self.messageWindow.hide()
+        self.window.show()
+    elif (len(self.envioMultiple)>0):
+        for ip in self.envioMultiple:
+          print "Enviar a : %s" %ip
+          texto_item=self.guiMessage.get_object("textview1")
+          buffer_text = texto_item.get_buffer()
+          valor=self.model.sendMessageToPatner(ip,str(buffer_text.get_text(buffer_text.get_start_iter(),buffer_text.get_end_iter())))
+          if (valor==0):
+             print "enviado"
+          else:
+             newenv = os.environ.copy()
+             newenv['anotes_message'] = 'True'
+             args = ['/usr/bin/gxmessage','-bg','red','-fg','white','-noescape','-buttons','cerrar','-wrap','-geometry','220x80','-sticky', '-ontop', '-title',"Anotes Error",str(valor)]
+             proc = subprocess.Popen(args, env=newenv)
+             
+        buffer_text.set_text("")
+        self.multipleEnabled=False
+        self.messageWindow.hide()
+        self.window.show()
+    else:
+        #print "Error"
+        args = ['/usr/bin/gxmessage','-bg','red','-fg','white','-noescape','-buttons','cerrar','-wrap','-geometry','220x80','-sticky', '-ontop', '-title',"Anotes Error",str('Debe seleccionar un destino')]
+
+    
   def addContact(self,evento):
     print "Agrega un contacto"
     entry_texto=self.guiContact.get_object("entry1")
@@ -265,6 +338,11 @@ class AnotesGui(object):
     print "Abriendo agregar contacto"
     self.window.hide()
     self.contactWindow.show()
+    
+  def adjuntoGui(self,evento):
+    print "Abriendo adjuntogui"
+    self.window.hide()
+    self.adjuntoWindow.show()
 
   def seleccionGui(self,evento):
     # self.buttonSelection.show()
@@ -333,7 +411,12 @@ class AnotesGui(object):
     print "Volviendo al menu gral"
     self.contactWindow.hide()
     self.window.show()
-
+    
+  def backAdjunto(self,evento):
+    print "Volviendo al menu gral"
+    self.adjuntoWindow.hide()
+    self.window.show()
+    
   def enabledServer(self,evento):
     boton=self.builder.get_object("button1")
     boton.hide()

@@ -48,6 +48,7 @@ class AnotesModel(object):
     def __init__(self):
         self.state=0
         self.contacts={}
+        self.archivo = None
         self.cantContact=0
         self.server=ReceptAnotes()
         self.server_message_thread=None
@@ -65,8 +66,18 @@ class AnotesModel(object):
         self.cantContact = self.cantContact + 1
         self.contacts[ip]=patner
 
-    def sendMessageToPatner(self,ip,message):
+    def sendFileToPatner(self,ip):
         patner=self.getContact(ip)
+        if (self.archivo is not None):
+            partner.setAttach(self.archivo)
+            patner.setHostName(self.hostname)
+            if (patner.sendFile()==0):
+                return 0
+            else:
+                return "Error de conexion en el vecino: %s" %(ip)
+                     
+    def sendMessageToPatner(self,ip,message):
+        patner=self.getContact(ip)      
         patner.setHostName(self.hostname)
         patner.setMessage(message)
         if (patner.send()==0):
@@ -113,4 +124,9 @@ class AnotesModel(object):
 
     def close_server(self):
         self.stopServer()
-
+        
+    def setAdjunto(self,filesrc):
+	    self.archivo = filesrc
+               
+    def getAdjunto(self):
+        return self.archivo

@@ -29,12 +29,19 @@ import threading
 import os
 import time
 import datetime
-
+import random
 
 class SocketServerMessage(threading.Thread):
     def __init__(self, funcion_server):
         threading.Thread.__init__(self)
         self.runnable = function_server
+    def run(self):
+        self.runnable()
+        
+class SocketServerFile(threading.Thread):
+    def __init__(self, funcion_server_file):
+        threading.Thread.__init__(self)
+        self.runnable = function_server_file
     def run(self):
         self.runnable()
 
@@ -43,9 +50,11 @@ class ReceptAnotes(object):
     def __init__(self):
         self.TCP_IP = '0.0.0.0'
         self.TCP_PORT = 24837
-        self.BUFFER_SIZE = 4096  # Normally 1024, but we want fast response
+        self.TCP_PORTFILE = 24838
+        self.BUFFER_SIZE = 8096  # Normally 1024, but we want fast response
         self.state = 0
         self.pid=-1
+        self.FILE = None
         self.newenv=None
 
     def getPid(self):
@@ -53,6 +62,9 @@ class ReceptAnotes(object):
 
     def setPort(self,port):
         self.TCP_PORT=port
+        
+    def setPortFile(self,port):
+        self.TCP_PORTFILE=port
     
     def setIp(self,ip):
         self.TCP_IP=ip
@@ -103,10 +115,35 @@ class ReceptAnotes(object):
                 print "received data: \n", data
              conn.close()
 
+    def run_serverFile(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind((self.TCP_IP, self.TCP_PORTFILE))
+        s.listen(1)
+        print "Iniciando..."
+        while self.state==0:
+            conn, addr = s.accept()
+            print 'Connection address:', addr
+            archivo_path=os.path.dirname(os.path.realpath(__file__))
+            archivo_nombre=random.randrange(0, 100000, 1)
+            archivo_path = archivo_path + archivo_nombre + ".adjunto"
+            file_handle = open(archivo_path, "wb")
+            while self.state==0:
+                data = conn.recv(self.BUFFER_SIZE)
+                if not data: 
+                    break
+                print len(data)
+                file_handle.write(data)
+                print "received data: \n", data
+            conn.close()
+            file_handle.close()
+             
     def run(self):
        thread = SocketServerMessage(self.run_server())
        thread.start()
        thread.join()
+       thread2 = SocketServerFile(self.run_serverFile())
+       thread2.start()
+       thread2.join()
 
     def run_command(self):
        self.newenv = os.environ.copy()
@@ -128,6 +165,7 @@ class ReceptAnotes(object):
 def main():
    ip = ''
    puerto = ''
+   puertoarchivo= ''
    try:
       if len(sys.argv) < 2:
           print 'Por ahora solo permite 3 argumentos atnotes -s server -p port' 
@@ -135,12 +173,12 @@ def main():
       opts, args = getopt.getopt(sys.argv[1:],"hs:p:")
 
    except getopt.GetoptError:
-      print 'atnotes.py -s <ip> -p <puerto>'
+      print 'atnotes.py -s <ip> -p <puerto> -f <puertoarchivo>'
       return 2
    for opt, arg in opts:
       print " %s : %s" % (opt,arg)
       if opt == '-h':
-         print 'atnotes.py -s <ip> -p <puerto>'
+         print 'atnotes.py -s <ip> -p <puerto> -f <puertoarchivo>'
          sys.exit()
       elif opt in ("-s"):
          ip = arg
@@ -150,9 +188,11 @@ def main():
    '''
    print 'ip is %s' % ip
    print 'puerto is %s' % puerto
+   print 'puertoarchivo is %s' % puertoarchivo
    '''
    server = ReceptAnotes()
    server.setPort(int(puerto))
+   #server.setPortFile(int(puertoarchivo))
    server.setIp(ip)
    server.run()
    return 0

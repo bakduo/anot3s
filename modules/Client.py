@@ -25,16 +25,21 @@
 
 import socket
 import sys, getopt
+from sendfile import sendfile
 
 class ClientAnotes(object):
     def __init__(self):
         self.TCP_IP = '127.0.0.1'
         self.TCP_PORT = 5005
-        self.BUFFER_SIZE = 1024
+        self.TCP_PORTFILE = 24838
+        self.BUFFER_SIZE = 8048
         self.MESSAGE = ""
+        self.FILE = None
         self.hostname=""
 
-
+    def setAttach(self,nombre):
+               self.FILE = nombre
+               
     def send(self):
          try:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -49,6 +54,25 @@ class ClientAnotes(object):
                 print( "<p>Error: %s</p>" % e )
                 return 1
 
+    def sendFile(self):
+         try:
+                file_handle = open(self.FILE, "rb")
+                blocksize = os.path.getsize(self.FILE)
+                offset = 0
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.connect((self.TCP_IP, self.TCP_PORTFILE))
+                while True:
+                    sent = sendfile(s.fileno(), file_handle.fileno(), offset, blocksize)
+                    if sent == 0:
+                        break
+                    offset += sent
+                s.close()
+                return 0
+         except:
+                e = sys.exc_info()[0]
+                print( "<p>Error: %s</p>" % e )
+                return 1
+               
     def setPort(self,port):
         self.TCP_PORT=port
 
