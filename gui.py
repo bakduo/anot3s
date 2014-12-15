@@ -33,6 +33,7 @@ import gobject
 import gtk
 import time
 import os
+import shutil
 import sys
 import subprocess
 from modules.AnotesModel import AnotesModel
@@ -100,6 +101,7 @@ class AnotesGui(object):
       self.model=model
     
     self.tray=None
+    self.enabledFileAttach=-1
     self.multipleEnabled=False
     self.envioMultiple=[]
     self.modelSelection = gtk.ListStore(gobject.TYPE_STRING)
@@ -110,15 +112,13 @@ class AnotesGui(object):
     "commitContact" : self.addContact,
     "backMenu" : self.backMainMenu
     })
-    
     self.guiAdjunto = gtk.Builder()
     self.guiAdjunto.add_from_file(path+"/gui-adjunto.glade")
     self.guiAdjunto.connect_signals({
-    "setAdjunto" : self.setAdjunto,
-    "sendAdjunto": self.sendAdjunto,
+    "setAdjunto": self.setAdjunto,
+    "sendFile": self.sendAdjunto,
     "hideAdjunto": self.backAdjunto
     })
-    
     self.guiMessage = gtk.Builder()
     self.guiMessage.add_from_file(path+"/gui-message.glade")
     self.guiMessage.connect_signals({
@@ -198,8 +198,6 @@ class AnotesGui(object):
     self.multipleEnabled=True
     self.window.hide()
     self.messageWindow.show()
-    
-
   def setTray(self,tray):
     self.tray=tray
   def salirApp(self):
@@ -231,6 +229,18 @@ class AnotesGui(object):
     path=os.path.dirname(os.path.realpath(__file__))
     try:
         if os.path.isfile(path+'/ips.txt'):
+           orig = open(path+'/ips.txt','r')
+           dest = open(path+'/ips-clean.txt', "w")
+           uniquelines = set(orig.read().split("\n"))
+           for line in uniquelines:
+              #f2.write("".join([line + "\n" for line in uniquelines]))
+              if line != '':
+                 dest.write("".join([line + "\n"]))
+           dest.close()
+           orig.close()
+        shutil.copy(path+'/ips-clean.txt', path+'/ips.txt')
+
+        if os.path.isfile(path+'/ips.txt'):
             f = open(path+'/ips.txt','r')
             string = ""
             pos=0
@@ -253,8 +263,7 @@ class AnotesGui(object):
     except IOError as e:
         print "I/O error({0}): {1}".format(e.errno, e.strerror)
     except:
-        print "Unexpected error:", sys.exc_info()[0]
-        
+        print "Unexpected error:", sys.exc_info()[0]    
   def setAdjunto(self,evento):
     print "setadjunto"
     dialog = gtk.FileChooserDialog("Open..",None,gtk.FILE_CHOOSER_ACTION_OPEN,(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_OPEN,gtk.RESPONSE_OK))
@@ -268,36 +277,42 @@ class AnotesGui(object):
     dialog.add_filter(filter)
     response = dialog.run()
     if response == gtk.RESPONSE_OK:
-       print dialog.get_filename(), 'selected'
-       self.model.setAdjunto(dialog.get_filename())
+       print dialog.get_filename(), 'selected\n'
+       self.enabledFileAttach = 0
+       self.model.setAdjunto(dialog.get_filename(),os.path.basename(dialog.get_filename()))
+       #print os.path.basename(dialog.get_filename())
     elif response == gtk.RESPONSE_CANCEL:
        print 'Closed, no files selected'
+       self.enabledFileAttach = -1
     dialog.destroy()
-  
+
   def sendAdjunto(self,evento):
     print "Enviando ..."
     model = self.combo.get_model()
     index = self.combo.get_active()
-    if (index >= 0 and self.multipleEnabled==False):
+    print index
+    if (index >= 0 and self.multipleEnabled==False and self.enabledFileAttach==0):
         valor_ip = model[index][1]# id 0 es indice id 1 contenido
+        print valor_ip
         valor=self.model.sendFileToPatner(str(valor_ip))
         if (valor==0):
             print "enviado"
+            mensaje_transfer="Enviado con exito %s." % self.model.getNombreArchivoAdjunto()
+            newenv = os.environ.copy()
+            newenv['anotes_message'] = 'True'
+            args = ['/usr/bin/gxmessage','-bg','black','-fg','white','-noescape','-buttons','cerrar','-wrap','-geometry','220x80','-sticky', '-ontop', '-title',"Anotes transfirio Ok",mensaje_transfer]
+            proc = subprocess.Popen(args, env=newenv)
         else:
              newenv = os.environ.copy()
              newenv['anotes_message'] = 'True'
              args = ['/usr/bin/gxmessage','-bg','red','-fg','white','-noescape','-buttons','cerrar','-wrap','-geometry','220x80','-sticky', '-ontop', '-title',"Anotes Error",str(valor)]
              proc = subprocess.Popen(args, env=newenv)
-
-        buffer_text.set_text("")
-        self.messageWindow.hide()
+        self.adjuntoWindow.hide()
         self.window.show()
     elif (len(self.envioMultiple)>0):
         for ip in self.envioMultiple:
           print "Enviar a : %s" %ip
-          texto_item=self.guiMessage.get_object("textview1")
-          buffer_text = texto_item.get_buffer()
-          valor=self.model.sendMessageToPatner(ip,str(buffer_text.get_text(buffer_text.get_start_iter(),buffer_text.get_end_iter())))
+          valor=self.model.sendFileToPatner(str(ip))
           if (valor==0):
              print "enviado"
           else:
@@ -305,29 +320,35 @@ class AnotesGui(object):
              newenv['anotes_message'] = 'True'
              args = ['/usr/bin/gxmessage','-bg','red','-fg','white','-noescape','-buttons','cerrar','-wrap','-geometry','220x80','-sticky', '-ontop', '-title',"Anotes Error",str(valor)]
              proc = subprocess.Popen(args, env=newenv)
-             
-        buffer_text.set_text("")
         self.multipleEnabled=False
-        self.messageWindow.hide()
+        self.adjuntoWindow.hide()
         self.window.show()
     else:
-        #print "Error"
-        args = ['/usr/bin/gxmessage','-bg','red','-fg','white','-noescape','-buttons','cerrar','-wrap','-geometry','220x80','-sticky', '-ontop', '-title',"Anotes Error",str('Debe seleccionar un destino')]
+        args = ['/usr/bin/gxmessage','-bg','red','-fg','white','-noescape','-buttons','cerrar','-wrap','-geometry','220x80','-sticky', '-ontop', '-title',"Anotes Error",str('Debe seleccionar un destino y un archivo')]
 
     
   def addContact(self,evento):
     print "Agrega un contacto"
     entry_texto=self.guiContact.get_object("entry1")
-    self.store.append([self.model.getCantContact(),entry_texto.get_text()])
-    iter = self.modelSelection.append()
-    self.modelSelection.set(iter, COLUMN_TEXT, entry_texto.get_text())
-    path=os.path.dirname(os.path.realpath(__file__))
-    f = open(path+'/ips.txt','a')
-    print entry_texto.get_text()+str("\n")
-    f.write(entry_texto.get_text()+str("\n"))
-    f.close()
-    self.model.addContact(entry_texto.get_text(),24837)
-    entry_texto.set_text("")
+    existe = self.model.getContact(entry_texto.get_text())
+    print existe
+    if existe is None:
+       self.store.append([self.model.getCantContact(),entry_texto.get_text()])
+       iter = self.modelSelection.append()
+       self.modelSelection.set(iter, COLUMN_TEXT, entry_texto.get_text())
+       path=os.path.dirname(os.path.realpath(__file__))
+       f = open(path+'/ips.txt','a')
+       print entry_texto.get_text()+str("\n")
+       f.write(entry_texto.get_text()+str("\n"))
+       f.close()
+       self.model.addContact(entry_texto.get_text(),24837)
+       entry_texto.set_text("")
+    else:
+       newenv = os.environ.copy()
+       newenv['anotes_message'] = 'True'
+       args = ['/usr/bin/gxmessage','-bg','red','-fg','white','-noescape','-buttons','cerrar','-wrap','-geometry','220x80','-sticky', '-ontop', '-title',"Anotes aviso",str('La ip esta duplicada')]
+       proc = subprocess.Popen(args, env=newenv)
+ 
     
   def messageGui(self,evento):
     print "Abriendo popup"
