@@ -44,7 +44,7 @@ class ClientAnotes(object):
         self.nombreAdjunto = nombrearchivo
     def setPortFile(self,port):
         self.TCP_PORTFILE=port
-               
+
     def send(self):
          try:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -67,7 +67,8 @@ class ClientAnotes(object):
                 #offset = 0
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect((self.TCP_IP, self.TCP_PORTFILE))
-                s.sendall(self.nombreAdjunto)
+                s.send(self.nombreAdjunto)
+                s.recv(self.BUFFER_SIZE)
                 while True:
                     #sent = sendfile(s.fileno(), file_handle.fileno(), offset, blocksize)
                     #print "valor enviado con sendfile: %s\n" % sent 
@@ -77,8 +78,8 @@ class ClientAnotes(object):
                     data = file_handle.read(self.BUFFER_SIZE)
                     if not data:
                         break  # EOF
-                    s.sendall(data)
-                
+                    s.send(data)
+
                 #print "Cerrando client..."
                 file_handle.close()
                 s.close()

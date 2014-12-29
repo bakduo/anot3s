@@ -29,6 +29,8 @@ import time
 import os
 import sys
 import threading
+import psutil
+import subprocess
 from Client import ClientAnotes
 from Server import ReceptAnotes
 
@@ -51,10 +53,16 @@ class AnotesModel(object):
         self.archivo = None
         self.nombreArchivo = None
         self.cantContact=0
+        self.TCPPORTFILE = 24839
         self.server=ReceptAnotes()
         self.server_message_thread=None
         self.server_file_thread=None
         self.hostname=socket.gethostname()
+        self.threads = []
+        self.path=os.path.dirname(os.path.realpath(__file__))
+        if os.path.isfile(self.path+'/../pid_enabled'):
+            os.system("rm -rf "+str(self.path+'/../pid_enabled'));
+        os.system("touch "+str(self.path+'/../pid_enabled'));
 
     def getContact(self,id):
         try:
@@ -81,7 +89,7 @@ class AnotesModel(object):
         if (self.archivo is not None):
             patner.setAttach(self.archivo,self.nombreArchivo)
             patner.setHostName(self.hostname)
-            patner.setPortFile(24839)
+            patner.setPortFile(self.TCPPORTFILE)
             retorno = patner.sendFile()
             #print "valor envio archivo : %s" % retorno
             if (retorno==0):
@@ -106,9 +114,9 @@ class AnotesModel(object):
 
     def getCantContact(self):
        return self.cantContact
-        
+
     def configServer(self,port,ip):
-        if (self.server==null):
+        if (self.server==None):
             self.server=ReceptAnotes()
         self.server.setPort(port)
         self.server.setIp(ip)
@@ -117,41 +125,55 @@ class AnotesModel(object):
         self.server.run()
 
     def runServer(self):
-        self.server_message_thread = threading.Thread(target=self.server.run_command())
-        self.server_message_thread.start()
-        self.server_file_thread = threading.Thread(target=self.server.run_commandFile())
-        self.server_file_thread.start()
+        self.server.setServerNotesName(self.getHostName())
+        self.server.run_command(self.getHostName())
+        self.server.run_commandFile(self.getHostName())
 
     def stopServer(self):
-        self.server.setState(1)
-        if self.server_message_thread is None:
-             print "Sin thread"
-             if int(self.server.pid) <> int(-1):
-                 self.server.close_process()
-             else:
-                 self.server.closeThread()
-        else:
-             try:
-                 if self.server_message_thread.isAlive():
-                     self.server_message_thread.stop()
-                 if self.server_file_thread.isAlive():
-                     self.server_file_thread.stop()
-                 #self.server.close_process()
-                 self.server.closeThread()
-                 os.system("kill -9 "+str(self.server.getPid()));
-                 os.system("kill -9 "+str(self.server.getPidFile()));
-                 gtk.main_quit
-             except:
-                 e = sys.exc_info()[0]
-                 print( "<p>Error: %s</p>" % e )
+        try:
+            self.server.setState(1)
+            print "Estado pids desde anotes: %s\n" % self.server.getPidsMessage()
+            for c in self.threads:
+                c.join()
+            try:
+                self.server.close_process()
+            except:
+                print "Error al realizar la llamada server.close_process()"
+            #Si existen registros de aplicaciones se deben eliminar
+            if os.path.isfile(self.path+'/../pid_enabled'):
+                f = open(self.path+'/../pid_enabled','r')
+                pid_program = f.readline()
+                if (str(pid_program) != '' and pid_program != None and int(pid_program) > 0):
+                    try:
+                        print "Lectura pid: %s\n" % str(pid_program)
+                        if psutil.pid_exists(int(pid_program)):
+                            try:
+                                os.system("kill -9 "+str(pid_program));
+                            except OSError:
+                                print "Error al eliminar con kill.\n"
+                    except OSError:
+                        print "Proceso %s no existe.\n" % (str(pid_program))
+                    except psutil.NoSuchProcess:
+                        print "Proceso no existe por medio de psutil\n"
+                    except AccessDenied:
+                        print "Acceso denegado el proceso.\n"
+                    except TimeoutExpired:
+                        print "Tiempo de espera agotado.\n"
+            gtk.main_quit()
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+        except:
+            e = sys.exc_info()[0]
+            print( "<p>Error al salir del programa desde anotesmodel: %s</p>\n" % e)
+            #print( "%s" % sys.exc_info())
 
     def close_server(self):
         self.stopServer()
-    
+
     def setAdjunto(self,filesrc,nombre):
         self.archivo = filesrc
         self.nombreArchivo = nombre
-    
+
     def getAdjunto(self):
         return self.archivo
     def getNombreArchivoAdjunto(self):

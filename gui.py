@@ -99,8 +99,8 @@ class AnotesGui(object):
       self.model=AnotesModel()
     else:
       self.model=model
-    
     self.tray=None
+    self.portMessage=24838
     self.enabledFileAttach=-1
     self.multipleEnabled=False
     self.envioMultiple=[]
@@ -129,14 +129,17 @@ class AnotesGui(object):
 
     self.messageWindow = self.guiMessage.get_object("window1")
     self.messageWindow.set_size_request(424, 240)
+    self.messageWindow.set_resizable(False)
     self.messageWindow.set_title("Anotes Message")
 
     self.contactWindow = self.guiContact.get_object("dialog1")
     self.contactWindow.set_size_request(200, 80)
+    self.contactWindow.set_resizable(False)
     self.contactWindow.set_title("Anotes Contact")
-    
+
     self.adjuntoWindow = self.guiAdjunto.get_object("dialog1")
     self.adjuntoWindow.set_size_request(200, 80)
+    self.adjuntoWindow.set_resizable(False)
     self.adjuntoWindow.set_title("Anotes agregar adjunto")
 
     self.builder = gtk.Builder()
@@ -159,9 +162,10 @@ class AnotesGui(object):
     self.combo = self.builder.get_object("combobox1")
     self.loadIps()
     self.window = self.builder.get_object("window1")
+    self.window.connect('delete_event', gtk.main_quit)
+    self.window.connect('destroy', self.salir)
     self.window.set_size_request(440, 280)
     self.window.set_title("Anotes GPL")
-    self.window.show()
 
     self.treeview = gtk.TreeView(self.modelSelection)
     self.treeview.set_rules_hint(gtk.TRUE)
@@ -188,6 +192,7 @@ class AnotesGui(object):
     #self.button.show()
     self.buttonSelection.connect("clicked",self.ok_selection)
     self.vbox.pack_end(self.buttonSelection,gtk.FALSE)
+    self.window.show()
 
   def ok_selection(self,event):
     self.windowSelection.hide();
@@ -242,13 +247,12 @@ class AnotesGui(object):
 
         if os.path.isfile(path+'/ips.txt'):
             f = open(path+'/ips.txt','r')
-            string = ""
             pos=0
             while 1:
                 line = f.readline()
                 if not line:break
                 self.store.append([pos,line.rstrip('\n')])
-                self.model.addContact(line.rstrip('\n'),24837)
+                self.model.addContact(line.rstrip('\n'),self.portMessage)
                 iter = self.modelSelection.append()
                 self.modelSelection.set(iter, COLUMN_TEXT, line.rstrip('\n'))
                 pos=pos + 1
@@ -263,7 +267,8 @@ class AnotesGui(object):
     except IOError as e:
         print "I/O error({0}): {1}".format(e.errno, e.strerror)
     except:
-        print "Unexpected error:", sys.exc_info()[0]    
+        print "Unexpected error file:", sys.exc_info()[0]
+
   def setAdjunto(self,evento):
     print "setadjunto"
     dialog = gtk.FileChooserDialog("Open..",None,gtk.FILE_CHOOSER_ACTION_OPEN,(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_OPEN,gtk.RESPONSE_OK))
@@ -326,7 +331,6 @@ class AnotesGui(object):
     else:
         args = ['/usr/bin/gxmessage','-bg','red','-fg','white','-noescape','-buttons','cerrar','-wrap','-geometry','220x80','-sticky', '-ontop', '-title',"Anotes Error",str('Debe seleccionar un destino y un archivo')]
 
-    
   def addContact(self,evento):
     print "Agrega un contacto"
     entry_texto=self.guiContact.get_object("entry1")
@@ -341,7 +345,7 @@ class AnotesGui(object):
        print entry_texto.get_text()+str("\n")
        f.write(entry_texto.get_text()+str("\n"))
        f.close()
-       self.model.addContact(entry_texto.get_text(),24837)
+       self.model.addContact(entry_texto.get_text(),self.portMessage)
        entry_texto.set_text("")
     else:
        newenv = os.environ.copy()
@@ -406,6 +410,7 @@ class AnotesGui(object):
              newenv['anotes_message'] = 'True'
              args = ['/usr/bin/gxmessage','-bg','red','-fg','white','-noescape','-buttons','cerrar','-wrap','-geometry','220x80','-sticky', '-ontop', '-title',"Anotes Error",str(valor)]
              proc = subprocess.Popen(args, env=newenv)
+             print "Pid program gxmesssage: %s" % proc.pid
              
         buffer_text.set_text("")
         self.multipleEnabled=False
@@ -432,12 +437,12 @@ class AnotesGui(object):
     print "Volviendo al menu gral"
     self.contactWindow.hide()
     self.window.show()
-    
+
   def backAdjunto(self,evento):
     print "Volviendo al menu gral"
     self.adjuntoWindow.hide()
     self.window.show()
-    
+
   def enabledServer(self,evento):
     boton=self.builder.get_object("button1")
     boton.hide()
