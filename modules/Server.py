@@ -166,8 +166,8 @@ class SocketServerFile(threading.Thread):
 class ReceptAnotes(object):
     def __init__(self):
         self.TCP_IP = '0.0.0.0'
-        self.TCP_PORT = 24838
-        self.TCP_PORTFILE = 24840
+        self.TCP_PORT = 24837
+        self.TCP_PORTFILE = 24839
         self.BUFFER_SIZE = 8096
         self.state = 0
         self.pid=-1

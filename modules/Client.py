@@ -31,7 +31,7 @@ from sendfile import sendfile
 class ClientAnotes(object):
     def __init__(self):
         self.TCP_IP = '127.0.0.1'
-        self.TCP_PORT = 5005
+        self.TCP_PORT = 24837
         self.TCP_PORTFILE = 24839
         self.BUFFER_SIZE = 8048
         self.MESSAGE = ""
