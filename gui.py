@@ -100,7 +100,7 @@ class AnotesGui(object):
     else:
       self.model=model
     self.tray=None
-    self.portMessage=24838
+    self.portMessage=24837
     self.enabledFileAttach=-1
     self.multipleEnabled=False
     self.envioMultiple=[]

@@ -47,7 +47,7 @@ class ShowMessage():
         #self.address = ip.split(':')[0]#self.client.getpeername()#str(address)
         self.address = address
         self.size = 8096
-        self.TCPPORT=24838
+        self.TCPPORT=24837
         self.msj = msj
         self.nombre = nombre
         self.guiResponse = gtk.Builder()

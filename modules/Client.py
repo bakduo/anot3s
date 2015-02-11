@@ -56,7 +56,7 @@ class ClientAnotes(object):
                 return 0
          except:
                 e = sys.exc_info()[0]
-                print( "<p>Error: %s</p>" % e )
+                print( "<p>Error al enviar mensaje: %s</p>" % e )
                 return 1
 
     def sendFile(self):

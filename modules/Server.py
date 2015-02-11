@@ -316,11 +316,13 @@ class ReceptAnotes(object):
             conn, addr = self.serverFile.accept()
             print 'Connection address:', addr
             nombre_archivo = conn.recv(self.BUFFER_SIZE)
-            conn.send(self.BUFFER_SIZE)
+            #conn.send(self.BUFFER_SIZE)
+            conn.send(nombre_archivo)
             print "Nombre archivo recibido: %s\n" % nombre_archivo
             archivo_path=os.path.dirname(os.path.realpath(__file__))
             archivo_nombre=random.randrange(0, 100000, 1)
-            archivo_path = archivo_path+"_"+nombre_archivo+"_"+archivo_nombre+".adjunto"
+            archivo_path = archivo_path + "/../adjuntos/"  + str(archivo_nombre) + nombre_archivo +".adjunto"
+            #archivo_path = archivo_path+"/../adjuntos/"+"_"+nombre_archivo+"_"+str(archivo_nombre)+".adjunto"
             file_handle = open(archivo_path, "wb")
             while self.state==0:
                 data = conn.recv(self.BUFFER_SIZE)
@@ -328,7 +330,7 @@ class ReceptAnotes(object):
                     break
                 print len(data)
                 file_handle.write(data)
-                print "received data: \n", data
+                #print "received data: \n", data
             conn.close()
         self.serverFile.close()
 
